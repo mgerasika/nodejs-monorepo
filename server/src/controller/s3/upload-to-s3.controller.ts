@@ -22,20 +22,20 @@ app.post(API_URL.api.s3.upload.toString(), async (req: IRequest, res: IResponse)
     if (!req.body.id) {
         return res.status(400).send('id is undefined');
     }
-    const [data, error] = await uploadFileToAmazonAsync({ id: req.body.id, cookies:[] });
+    const [data, error] = await uploadFileToAmazonAsync({ id: req.body.id, cookie:'' });
     if (error) {
         return res.status(400).send(error);
     }
     return res.send(data);
 });
 
-export const uploadFileToAmazonAsync = async ({ id, cookies }: { id: string, cookies: string[] }): Promise<IQueryReturn<string>> => {
+export const uploadFileToAmazonAsync = async ({ id, cookie }: { id: string, cookie: string }): Promise<IQueryReturn<string>> => {
     console.log('uploadFileToAmazonAsync start');
 
     const [response] = await toQuery(() => axios.get(`https://toloka.to/download.php?id=${id}`, {  withCredentials: true,
     headers: 
     {...HURTOM_HEADERS,
-        Cookie: cookies.map(cookie => cookie.split(';')[0]).join('; ')
+        Cookie: cookie
     }}));
 
     const fileContent = response?.data as string;

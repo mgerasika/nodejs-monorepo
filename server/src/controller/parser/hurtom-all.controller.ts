@@ -29,19 +29,19 @@ interface IRequest extends IExpressRequest {
 interface IResponse extends IExpressResponse<IHurtomInfoResponse[], void> {}
 
 app.post(API_URL.api.parser.hurtomAll.toString(), async (req: IRequest, res: IResponse) => {
-    const [data, error] = await parseHurtomAllPagesAsync();
+    const [data, error] = await parseHurtomAllPagesAsync('f139', '');
     if (error) {
         return res.status(400).send(error);
     }
     return res.send(data);
 });
 
-export const parseHurtomAllPagesAsync = async (): Promise<IQueryReturn<IHurtomInfoResponse[]>> => {
-    const [loginInfo] = await hurtomLoginAsync()
+export const parseHurtomAllPagesAsync = async (category: string, cookie: string): Promise<IQueryReturn<IHurtomInfoResponse[]>> => {
+   
     const allHurtomItems: IHurtomInfoResponse[] = [];
-    console.log('cookies', loginInfo?.cookies)
+   
     const fnAsync: any = async (page: number) => {
-        const [hurtomItems, error] = await getHurtomPageAsync(page, loginInfo?.cookies || []);
+        const [hurtomItems, error] = await getHurtomPageAsync(category, page, cookie || '');
         if (hurtomItems) {
             allHurtomItems.push(hurtomItems as unknown as IHurtomInfoResponse);
             return fnAsync(++page);
@@ -77,7 +77,7 @@ export const HURTOM_HEADERS = {
     'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
-    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'sec-fetch-dest': 'document',
     'sec-fetch-mode': 'navigate',
     'sec-fetch-site': 'same-origin',
@@ -88,24 +88,28 @@ export const HURTOM_HEADERS = {
 };
 
 const YEAR_REGEXP = /\((\d{4})\)/;
-const getHurtomPageAsync = async (page: any, cookies: string[]): Promise<IQueryReturn<IHurtomInfoResponse[]>> => {
-    const url = `https://toloka.to/f139${page ? '-' + page * 90 : ''}`;
+const getHurtomPageAsync = async (category: string, page: any, cookie: string): Promise<IQueryReturn<IHurtomInfoResponse[]>> => {
+    const url = `https://toloka.to/${category}${page ? '-' + page * 90 : ''}`;
     console.log('request url = ' + url);
+
+
+    console.log('request url = ' + url);
+    
     
     const [response, error] = await toQuery(() => axios.get(url, { withCredentials: true, headers: {
         ...HURTOM_HEADERS,
-        Cookie: cookies.map(cookie => cookie.split(';')[0]).join('; ')
+        Cookie: cookie
+        
     },
   
 }));
     if (error) {
         return [undefined, error];
     }
-    // console.log('request headers = ' + response?.config.headers);
-    console.log('response status = ' + response?.status);
 
     const html = response?.data;
     const $ = cheerio.load(html);
+
     let trs: any = [];
     $('table.forumline').each((_: any, table: any) => {
         const htmlTrs = $(table).find('tr');

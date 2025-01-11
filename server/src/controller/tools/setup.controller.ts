@@ -7,6 +7,7 @@ import { validateSchema } from '@server/utils/validate-schema.util';
 import { createLogs } from '@server/utils/create-logs.utils';
 import { oneByOneAsync } from '@server/utils/one-by-one-async.util';
 import { IQueryReturn } from '@server/utils/to-query.util';
+import { hurtomLoginAsync } from '../parser/hurtom-login.controller';
 
 export interface ISetupBody {
     updateHurtom: boolean;
@@ -53,10 +54,11 @@ app.post(API_URL.api.tools.setup.toString(), async (req: IRequest, res: IRespons
 export const setupAsync = async (props: ISetupBody): Promise<IQueryReturn<string[]>> => {
     const logs = createLogs();
 
+    const [loginInfo] = await hurtomLoginAsync()
     logs.push('request params ', props)
     const [dbMovies = []] = await dbService.movie.getMoviesAllAsync();
     if (props.updateHurtom) {
-        const [parseItems = [], parseError] = await dbService.parser.parseHurtomAllPagesAsync();
+        const [parseItems = [], parseError] = await dbService.parser.parseHurtomAllPagesAsync('f139', loginInfo?.cookie || '');
         if (parseError) {
             logs.push(`hurtom items error`, parseError);
             return [undefined, logs.get() as any];
@@ -108,6 +110,7 @@ export const setupAsync = async (props: ISetupBody): Promise<IQueryReturn<string
                 }
                 const [successUpload, errorUpload] = await dbService.s3.uploadFileToAmazonAsync({
                     id: movie.download_id,
+                    cookie:loginInfo?.cookie || ''
                 });
                 if (errorUpload) {
                     return logs.push(`error upload to s3`, errorUpload);
@@ -137,6 +140,7 @@ export const setupAsync = async (props: ISetupBody): Promise<IQueryReturn<string
                 const [successUpload, errorUpload] = await dbService.cdn.uploadFileToCDNAsync({
                     fileName: fileName,
                     downloadId: movie.download_id,
+                    cookie: loginInfo?.cookie || ''
                 });
                 if (errorUpload) {
                     return logs.push(`error upload to cdn`, errorUpload);
@@ -163,7 +167,7 @@ export const setupAsync = async (props: ISetupBody): Promise<IQueryReturn<string
             if (imdbInfo) {
                 imdbId = imdbInfo.id;
             } else {
-                const [hurtomDetails, hurtomError] = await dbService.parser.parseHurtomDetailsAsync(movieItem.href || '');
+                const [hurtomDetails, hurtomError] = await dbService.parser.parseHurtomDetailsAsync(movieItem.href || '', loginInfo?.cookie || '');
                 if (hurtomError) {
                     return logs.push(hurtomError);
                 }

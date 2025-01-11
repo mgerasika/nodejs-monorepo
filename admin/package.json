@@ -45,7 +45,7 @@
     "deploy": "firebase deploy"
   },
   "engines": {
-    "node": "16.14"
+    "node": "18.19.1"
   },
   "eslintConfig": {
     "extends": [
