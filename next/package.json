@@ -27,7 +27,7 @@
     "swagger-to-typescript2": "^0.1.27"
   },
   "engines": {
-    "node": "18.19.0"
+    "node": "18.19.1"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",

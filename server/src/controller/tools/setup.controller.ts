@@ -15,7 +15,6 @@ export interface ISetupBody {
     searchImdb: boolean;
     searchImdbIdInHurtom: boolean;
     fixRelationIntoMovieDb: boolean;
-    deprecated_uploadTorrentToS3FromMovieDB: boolean;
 }
 
 interface IRequest extends IExpressRequest {
@@ -30,7 +29,6 @@ const schema = Joi.object<ISetupBody>({
     searchImdb: Joi.boolean().required(),
     fixRelationIntoMovieDb: Joi.boolean().required(),
     searchImdbIdInHurtom: Joi.boolean().required(),
-    deprecated_uploadTorrentToS3FromMovieDB: Joi.boolean().optional(),
 });
 
 app.post(API_URL.api.tools.setup.toString(), async (req: IRequest, res: IResponse) => {
@@ -100,31 +98,7 @@ export const setupAsync = async (props: ISetupBody): Promise<IQueryReturn<string
         }, {timeout:0});
     }
 
-    if (props.deprecated_uploadTorrentToS3FromMovieDB) {
-        await oneByOneAsync(
-            dbMovies.filter((m) => !m.torrent_url && m.download_id),
-            async (movie) => {
-                const [hasFile] = await dbService.s3.hasFileS3Async({ id: movie.download_id });
-                if (hasFile) {
-                    return;
-                }
-                const [successUpload, errorUpload] = await dbService.s3.uploadFileToAmazonAsync({
-                    id: movie.download_id,
-                    cookie:loginInfo?.cookie || ''
-                });
-                if (errorUpload) {
-                    return logs.push(`error upload to s3`, errorUpload);
-                }
-
-                logs.push(`success upload to s3`, movie.download_id);
-                await dbService.movie.putMovieAsync(movie.id, {
-                    ...movie,
-                    torrent_url: successUpload as string,
-                });
-            },
-        );
-    }
-
+    
     if (props.uploadToCdn) {
         const filteredMovies = dbMovies.filter((movie) => !movie.torrent_url).filter((movie) => movie.download_id);
         logs.push('Movies without cdn file ', filteredMovies.length)

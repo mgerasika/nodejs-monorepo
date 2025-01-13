@@ -22,11 +22,10 @@ export const MovieListContainer = () => {
   const handleSetup = useCallback(() => {
     api
       .toolsSetupPost({
-        updateHurtom: true,
-        uploadTorrentToS3FromMovieDB: false,
+        updateHurtom: false,
         uploadToCdn: true,
         searchImdb: true,
-        searchImdbIdInHurtom: true,
+        searchImdbIdInHurtom: false,
         fixRelationIntoMovieDb: true,
       })
       .then(handleGetAll);

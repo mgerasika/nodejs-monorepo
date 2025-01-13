@@ -167,7 +167,6 @@ export interface ISetupBody {
 	'searchImdb': boolean;
 	'searchImdbIdInHurtom': boolean;
 	'fixRelationIntoMovieDb': boolean;
-	'uploadTorrentToS3FromMovieDB': boolean;
 }
 export type TCdnIdGetError = ''
 	 |'undefined';
