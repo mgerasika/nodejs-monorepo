@@ -31,5 +31,9 @@ This app - it's html parser that get all hd cartoons info from https://toloka.to
 
 ![image](https://github.com/user-attachments/assets/ca974ab5-433a-4652-bf0b-c3bc8a9e651c)
 
+## Internal
+
+docker run --rm -v /mnt/hdd1/backup:/backup -e PGPASSWORD=test postgres:17 pg_dump -U test -h 192.168.0.16 -p 5434 -F c -b -v -f /backup/ua-video-torrent-$(date +%Y-%m-%d-%H:%M).dump ua-video-torrent
+
 
 

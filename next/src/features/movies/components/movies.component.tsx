@@ -120,7 +120,7 @@ export const MoviesComponent = ({
   return (
     <div tw="mx-auto container px-4">
       <h2 tw="text-white text-[30px] text-center  py-4 relative">
-        HD Cartoons
+        Cartoons
         {/* <sup tw="text-sm absolute top-2">
           from <a href="https://toloka.to/" tw="text-blue-300 underline" target="blank">
           toloka.to
